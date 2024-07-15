@@ -4,7 +4,7 @@ import random
 import time
 from enum import Enum
 from typing import Dict
-from twoFactor import connect_to_email, get_instagram_code
+from instagrapi.mixins.twoFactor import connect_to_email, get_instagram_code
 import requests
 
 from instagrapi.exceptions import (

@@ -9,7 +9,7 @@ import uuid
 from pathlib import Path
 from typing import Dict, Union
 from uuid import uuid4
-from twoFactor import connect_to_email, get_instagram_code
+from instagrapi.mixins.twoFactor import connect_to_email, get_instagram_code
 
 import requests
 from pydantic import ValidationError
