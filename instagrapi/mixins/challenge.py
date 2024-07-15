@@ -419,6 +419,7 @@ class ChallengeResolveMixin:
             wait_seconds = 30
             for attempt in range(24):
                 time.sleep(80)
+                print("Challenging twofactor")
                 mail = (connect_to_email(self.email_address, self.email_password),)
                 code = (get_instagram_code(mail),)
                 # code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)

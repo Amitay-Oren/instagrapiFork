@@ -463,6 +463,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 self.last_response.headers.get("ig-set-authorization")
             )
         except TwoFactorRequired as e:
+            print("Trying twofactor login")
             mail = (connect_to_email(email_address, email_password),)
             code = (get_instagram_code(mail),)
             verification_code = code
