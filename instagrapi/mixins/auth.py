@@ -9,6 +9,7 @@ import uuid
 from pathlib import Path
 from typing import Dict, Union
 from uuid import uuid4
+from twoFactor import connect_to_email, get_instagram_code
 
 import requests
 from pydantic import ValidationError
@@ -280,6 +281,8 @@ class PostLoginFlowMixin:
 class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
+    email_address = None
+    email_password = None
     authorization = ""  # Bearer IGT:2:<base64:authorization_data>
     authorization_data = {}  # decoded authorization header
     last_login = None
@@ -368,12 +371,15 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         except (PrivateError, ValidationError):
             user = self.user_short_gql(int(user_id))
         self.username = user.username
+
         self.cookie_dict["ds_user_id"] = user.pk
         return True
 
     def login(
         self,
         username: Union[str, None] = None,
+        email_address: Union[str, None] = None,
+        email_password: Union[str, None] = None,
         password: Union[str, None] = None,
         relogin: bool = False,
         verification_code: str = "",
@@ -398,12 +404,26 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
 
-        if not self.username or not self.password:
-            if username is None or password is None:
-                raise BadCredentials("Both username and password must be provided.")
+        if (
+            not self.username
+            or not self.password
+            or not self.email_address
+            or not self.email_password
+        ):
+            if (
+                username is None
+                or password is None
+                or email_address is None
+                or email_password is None
+            ):
+                raise BadCredentials(
+                    "Username, password, email address and emaill password must all be provided."
+                )
 
             self.username = username
             self.password = password
+            self.email_address = email_address
+            self.email_password = email_password
 
         if relogin:
             self.authorization_data = {}
@@ -443,10 +463,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 self.last_response.headers.get("ig-set-authorization")
             )
         except TwoFactorRequired as e:
+            mail = (connect_to_email(email_address, email_password),)
+            code = (get_instagram_code(mail),)
+            verification_code = code
             if not verification_code.strip():
                 raise TwoFactorRequired(
                     f"{e} (you did not provide verification_code for login method)"
                 )
+
             two_factor_identifier = self.last_json.get("two_factor_info", {}).get(
                 "two_factor_identifier"
             )

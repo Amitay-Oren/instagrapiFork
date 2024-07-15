@@ -4,7 +4,7 @@ import random
 import time
 from enum import Enum
 from typing import Dict
-
+from twoFactor import connect_to_email, get_instagram_code
 import requests
 
 from instagrapi.exceptions import (
@@ -415,9 +415,13 @@ class ChallengeResolveMixin:
                         f'ChallengeResolve: Choice "email" or "phone_number" '
                         f"(sms) not available to this account {self.last_json}"
                     )
-            wait_seconds = 5
+
+            wait_seconds = 30
             for attempt in range(24):
-                code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
+                time.sleep(80)
+                mail = (connect_to_email(self.email_address, self.email_password),)
+                code = (get_instagram_code(mail),)
+                # code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
                 if code:
                     break
                 time.sleep(wait_seconds)
